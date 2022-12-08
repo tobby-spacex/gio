@@ -4,52 +4,38 @@ declare(strict_types = 1);
 
 namespace App\Controllers;
 
+use App\App;
 use App\View;
-use PDO;
+use App\Model\User;
+use App\Model\Invoice;
+use App\Model\SignUp;
 
 class HomeController
 {
     public function index(): View
     {
-        try {
-            $db = new PDO('mysql:host=' .$_ENV['DB_HOST'] . ';dbname=' . $_ENV['DB_DATABASE'], 
-            $_ENV['DB_USER'], $_ENV['DB_PASS']
-        );
-        } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage(), $e->getCode());
-        }
-
-        $email = 'jone.done@.com';
+        $email = 'jone12.done@.com';
         $name  = 'Jone Doe';
         $is_active = 'true';
         $created_at = '1/08/1987';
 
-        // $query = 'INSERT INTO users (email, full_name, is_active, created_at)
-        //            VALUES (?, ?, ?, ?)';
-        
-        $query = 'INSERT INTO users (email, full_name, is_active, created_at)
-        VALUES (:email, :name, :active, :date)';
+        $amount = 10;
+        $user_number = 100087;
 
-        $stmt = $db->prepare($query);
+        $userModel = new User();
+        $invoiceModel = new Invoice();
 
-        $stmt->execute(
+        $invoiceId = (new SignUp($userModel, $invoiceModel))->register(
             [
-               'name' => $email,
-               'email'=> $name,
-               'active' => $is_active, 
-               'date' => $created_at
+                'email' => $email,
+                'name'  => $name,
+                'is_active'=> $is_active
+            ],
+            [
+                'amount' => $amount,
             ]
         );
-
-        $id = (int) $db->lastInsertId();
-
-        $user = $db->query('SELECT *FROM users WHERE id=' . $id)->fetch();
-
-        echo '<pre>';
-        var_dump($user);
-        echo '</pre>';
-
-        var_dump($db);
-        return View::make('index');
+        
+        return View::make('index', ['invoice' => $userModel->find()]);
     }
 }
